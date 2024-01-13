@@ -1,22 +1,16 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const [deployer, member1] = await ethers.getSigners();
+  const eventTime = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7; // 7 days from now
+  const price = ethers.parseEther("2");
+  const mintableTicket = 1700;
 
-  const lockedAmount = ethers.parseEther("0.001");
+  const Eventii = await ethers.deployContract("Eventii", [deployer.address, "EthDenver Hackathon", eventTime, price, mintableTicket]);
 
-  const lock = await ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+  await Eventii.waitForDeployment();
 
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
+  console.log(`Eventii deployed to ${Eventii.target}` );
 }
 
 // We recommend this pattern to be able to use async/await everywhere
