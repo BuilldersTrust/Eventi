@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.0;
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "../contracts/ARCs/ARC-721";
+// import "../contracts/utils/Ownable.sol";
 
-contract Eventii is ERC721, ERC721URIStorage, Ownable {
+contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgradeable {
     uint256 private nextTicketId;
     string public eventName;
     uint256 public eventDate;
@@ -25,13 +27,15 @@ contract Eventii is ERC721, ERC721URIStorage, Ownable {
 
     mapping(uint256 => Ticket) tickets;
 
-    constructor(address initialOwner, string memory _eventName, uint256 _eventDate, uint256 _price, uint256 _mintableTicket) ERC721("TicketingSystem", "TS") Ownable(initialOwner) {
+    function initialize(address initialOwner, string memory _eventName, uint256 _eventDate, uint256 _price, uint256 _mintableTicket) public initializer {
+        __ERC721_init("TicketingSystem", "TS");
+        __Ownable_init(initialOwner);
+    
         eventName = _eventName;
-        eventDate =  _eventDate;
+        eventDate = _eventDate;
         price = _price;
         mintableTicket = _mintableTicket;
     }
-
 
     function buyTicket() payable  public {
         require(nextTicketId <= mintableTicket, "No More Available Ticket!!");
@@ -42,7 +46,7 @@ contract Eventii is ERC721, ERC721URIStorage, Ownable {
         nextTicketId++;
     }
 
-     function transferFrom(address from, address to, uint256 tokenId) public override(ERC721, IERC721) {
+     function transferFrom(address from, address to, uint256 tokenId) public override(ERC721Upgradeable, IERC721) {
         require(tickets[tokenId].used == false, "Ticket has already been used");
         super.transferFrom(from, to, tokenId);
     }
@@ -68,7 +72,7 @@ contract Eventii is ERC721, ERC721URIStorage, Ownable {
         tokenuri = _tokenURI;
     }
 
-    function tokenURI(uint256) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+    function tokenURI(uint256) public view override(ERC721Upgradeable, ERC721URIStorageUpgradeable) returns (string memory) {
         return tokenuri;
     }
 
@@ -80,7 +84,7 @@ contract Eventii is ERC721, ERC721URIStorage, Ownable {
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721URIStorage)
+        override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
