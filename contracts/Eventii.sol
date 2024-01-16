@@ -32,8 +32,8 @@ contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgra
     mapping(uint256 => Ticket) tickets;
     mapping(Rating => uint256) public ratingsCount;
 
-    function initialize(address initialOwner, string memory _eventName, uint256 _eventDate, uint256 _price, uint256 _mintableTicket) public initializer {
-        __ERC721_init(_eventName, "TS");
+    function initialize(address initialOwner, string memory _eventName, string memory _eventSymbl, uint256 _eventDate, uint256 _price, uint256 _mintableTicket) public initializer {
+        __ERC721_init(_eventName, _eventSymbl);
         __Ownable_init(initialOwner);
     
         eventName = _eventName;
@@ -90,6 +90,18 @@ contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgra
     function getRatingCount(Rating rating) public view returns (uint256) {
         return ratingsCount[rating];
     }
+    
+    function getAllRatingCounts() public view returns (uint256[] memory) {
+        uint256 countLength = uint256(Rating.three) + 1;
+        uint256[] memory counts = new uint256[](countLength); 
+
+        for (uint256 i = 0; i < countLength; i++) { 
+            Rating ratingValue = Rating(i);
+            counts[i] = ratingsCount[ratingValue]; 
+        }
+
+        return counts;
+    }
 
     function withdrawFunds(address _reciever) external onlyOwner {
         payable(_reciever).transfer(address(this).balance);
@@ -105,3 +117,4 @@ contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgra
     }
  
 }
+

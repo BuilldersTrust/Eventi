@@ -10,7 +10,8 @@ contract MinimalProxyFactory {
     mapping(address => address[]) proxiesTracker;
     event NewProxy(address indexed _owner, address indexed proxyAddress);
 
-    function deployClone(address _implementationContract, address _owner, string memory _eventName , uint256 _eventDate, uint256 _price, uint256 _mintableTicket ) external {
+
+    function deployClone(address _implementationContract, address _owner, string memory _eventName, string memory _eventSymbl, uint256 _eventDate, uint256 _price, uint256 _mintableTicket ) external {
         bytes20 implementationContractInBytes = bytes20(_implementationContract);
         //address to assign a cloned proxy
         address proxy;
@@ -45,7 +46,7 @@ contract MinimalProxyFactory {
         }
        
         // Call initialization
-        Eventii(proxy).initialize(_owner, _eventName, _eventDate, _price, _mintableTicket);
+        Eventii(proxy).initialize(_owner, _eventName, _eventSymbl, _eventDate, _price, _mintableTicket);
         proxies.push(proxy);
         proxiesTracker[_owner].push(proxy);
         emit NewProxy(_owner, proxy);
