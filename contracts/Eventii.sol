@@ -5,9 +5,6 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-// import "../contracts/ARCs/ARC-721";
-// import "../contracts/utils/Ownable.sol";
-
 contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgradeable {
     uint256 private nextTicketId;
     string public eventName;
@@ -25,10 +22,18 @@ contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgra
         bool used;
     }
 
+    enum Rating {
+        zero, 
+        one, 
+        two, 
+        three 
+    }
+
     mapping(uint256 => Ticket) tickets;
+    mapping(Rating => uint256) public ratingsCount;
 
     function initialize(address initialOwner, string memory _eventName, uint256 _eventDate, uint256 _price, uint256 _mintableTicket) public initializer {
-        __ERC721_init("TicketingSystem", "TS");
+        __ERC721_init(_eventName, "TS");
         __Ownable_init(initialOwner);
     
         eventName = _eventName;
@@ -37,8 +42,8 @@ contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgra
         mintableTicket = _mintableTicket;
     }
 
-    function buyTicket() payable  public {
-        require(nextTicketId <= mintableTicket, "No More Available Ticket!!");
+    function buyTicket() payable public {
+        require(nextTicketId <= mintableTicket - 1, "No More Available Ticket!!");
         require(msg.value == price, "Invalid amount");
         Ticket memory newTicket = Ticket(msg.sender, nextTicketId, price, false);
         tickets[nextTicketId] = newTicket;
@@ -76,10 +81,19 @@ contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgra
         return tokenuri;
     }
 
-    function rateEvent() public {
-        
+    function rateEvent(Rating rate) public {
+        require(balanceOf(msg.sender) > 1, "NOT Holder!!!");
+         ratingsCount[rate]++;    
     }
 
+
+    function getRatingCount(Rating rating) public view returns (uint256) {
+        return ratingsCount[rating];
+    }
+
+    function withdrawFunds(address _reciever) external onlyOwner {
+        payable(_reciever).transfer(address(this).balance);
+    }
 
     function supportsInterface(bytes4 interfaceId)
         public
@@ -91,7 +105,3 @@ contract Eventii is ERC721Upgradeable, ERC721URIStorageUpgradeable, OwnableUpgra
     }
  
 }
-
-
-
-
